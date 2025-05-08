@@ -4,7 +4,7 @@ services:
   postgres:
     container_name: ${POSTGRES_CONTAINER_NAME:-keycloak_db}
     image: postgres:${POSTGRES_VERSION:-16}
-    restart: unless-stopped
+    restart: ${POSTGRES_RESTART_POLICY:-unless-stopped}
     environment:
       POSTGRES_DB: ${POSTGRES_DB_NAME:-keycloak}
       POSTGRES_USER: ${POSTGRES_USER:-keycloak}
@@ -17,14 +17,14 @@ services:
       - default
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-keycloak} -d ${POSTGRES_DB_NAME:-keycloak}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: ${POSTGRES_HEALTHCHECK_INTERVAL:-10s}
+      timeout: ${POSTGRES_HEALTHCHECK_TIMEOUT:-5s}
+      retries: ${POSTGRES_HEALTHCHECK_RETRIES:-5}
 
   keycloak:
     container_name: ${KEYCLOAK_CONTAINER_NAME:-keycloak_app}
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-23.0.3}
-    restart: unless-stopped
+    restart: ${KEYCLOAK_RESTART_POLICY:-unless-stopped}
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
@@ -43,12 +43,12 @@ services:
       - default
     depends_on:
       - postgres
-    command: start-dev
+    command: ${KEYCLOAK_COMMAND:-start-dev}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: ${KEYCLOAK_HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${KEYCLOAK_HEALTHCHECK_TIMEOUT:-10s}
+      retries: ${KEYCLOAK_HEALTHCHECK_RETRIES:-3}
 
 networks:
   default:
