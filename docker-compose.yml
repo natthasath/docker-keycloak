@@ -4,11 +4,12 @@ services:
   postgres:
     container_name: ${POSTGRES_CONTAINER_NAME:-keycloak_db}
     image: postgres:${POSTGRES_VERSION:-16}
-    restart: ${POSTGRES_RESTART_POLICY:-unless-stopped}
+    restart: ${RESTART_POLICY:-unless-stopped}
     environment:
       POSTGRES_DB: ${POSTGRES_DB_NAME:-keycloak}
       POSTGRES_USER: ${POSTGRES_USER:-keycloak}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keycloak_password}
+      TZ: ${TIMEZONE:-UTC}
     ports:
       - ${POSTGRES_PORT:-5432}:5432
     volumes:
@@ -17,14 +18,14 @@ services:
       - default
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-keycloak} -d ${POSTGRES_DB_NAME:-keycloak}"]
-      interval: ${POSTGRES_HEALTHCHECK_INTERVAL:-10s}
-      timeout: ${POSTGRES_HEALTHCHECK_TIMEOUT:-5s}
-      retries: ${POSTGRES_HEALTHCHECK_RETRIES:-5}
+      interval: ${HEALTHCHECK_INTERVAL:-10s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-5s}
+      retries: ${HEALTHCHECK_RETRIES:-5}
 
   keycloak:
     container_name: ${KEYCLOAK_CONTAINER_NAME:-keycloak_app}
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-23.0.3}
-    restart: ${KEYCLOAK_RESTART_POLICY:-unless-stopped}
+    restart: ${RESTART_POLICY:-unless-stopped}
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
@@ -35,6 +36,7 @@ services:
       KC_LOG_LEVEL: ${KC_LOG_LEVEL:-INFO}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_password}
+      TZ: ${TIMEZONE:-UTC}
     ports:
       - ${KEYCLOAK_PORT:-8080}:8080
     volumes:
@@ -46,9 +48,9 @@ services:
     command: ${KEYCLOAK_COMMAND:-start-dev}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
-      interval: ${KEYCLOAK_HEALTHCHECK_INTERVAL:-30s}
-      timeout: ${KEYCLOAK_HEALTHCHECK_TIMEOUT:-10s}
-      retries: ${KEYCLOAK_HEALTHCHECK_RETRIES:-3}
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
+      retries: ${HEALTHCHECK_RETRIES:-3}
 
 networks:
   default:
