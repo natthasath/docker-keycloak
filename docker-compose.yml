@@ -1,64 +1,64 @@
 services:
   postgres:
-    container_name: ${POSTGRES_CONTAINER_NAME:-keycloak_db}
-    image: postgres:${POSTGRES_VERSION:-16}
-    restart: ${RESTART_POLICY:-unless-stopped}
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    image: postgres:${POSTGRES_VERSION}
+    restart: ${RESTART_POLICY}
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_NAME:-keycloak}
-      POSTGRES_USER: ${POSTGRES_USER:-keycloak}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keycloak_password}
-      TZ: ${TIMEZONE:-UTC}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TIMEZONE}
     ports:
-      - ${POSTGRES_PORT:-5432}:5432
+      - ${POSTGRES_PORT}:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - default
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-keycloak} -d ${POSTGRES_DB_NAME:-keycloak}"]
-      interval: ${HEALTHCHECK_INTERVAL:-10s}
-      timeout: ${HEALTHCHECK_TIMEOUT:-5s}
-      retries: ${HEALTHCHECK_RETRIES:-5}
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}"]
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
 
   keycloak:
-    container_name: ${KEYCLOAK_CONTAINER_NAME:-keycloak_app}
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-23.0.3}
-    restart: ${RESTART_POLICY:-unless-stopped}
+    container_name: ${KEYCLOAK_CONTAINER_NAME}
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+    restart: ${RESTART_POLICY}
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
-      KC_DB_URL_DATABASE: ${POSTGRES_DB_NAME:-keycloak}
-      KC_DB_USERNAME: ${POSTGRES_USER:-keycloak}
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-keycloak_password}
-      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED:-true}
-      KC_LOG_LEVEL: ${KC_LOG_LEVEL:-INFO}
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_password}
-      TZ: ${TIMEZONE:-UTC}
+      KC_DB_URL_DATABASE: ${POSTGRES_DB_NAME}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED}
+      KC_LOG_LEVEL: ${KC_LOG_LEVEL}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      TZ: ${TIMEZONE}
     ports:
-      - ${KEYCLOAK_PORT:-8080}:8080
+      - ${KEYCLOAK_PORT}:8080
     volumes:
       - keycloak-themes:/opt/keycloak/themes
     networks:
       - default
     depends_on:
       - postgres
-    command: ${KEYCLOAK_COMMAND:-start-dev}
+    command: ${KEYCLOAK_COMMAND}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
-      interval: ${HEALTHCHECK_INTERVAL:-30s}
-      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
-      retries: ${HEALTHCHECK_RETRIES:-3}
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
 
 networks:
   default:
-    name: keycloak_network
+    name: ${KEYCLOAK_CONTAINER_NAME}_network
     driver: bridge
 
 volumes:
   postgres-data:
-    name: keycloak_postgres_data
+    name: ${POSTGRES_CONTAINER_NAME}_data
     driver: local
   keycloak-themes:
-    name: keycloak_themes
+    name: ${KEYCLOAK_CONTAINER_NAME}_themes
     driver: local
