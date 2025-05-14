@@ -1,44 +1,46 @@
+name: ${GLOBAL_NAME}
+
 services:
   postgres:
     container_name: ${POSTGRES_CONTAINER_NAME}
-    image: postgres:${POSTGRES_VERSION}
+    image: ${POSTGRES_IMAGE_NAME}:${POSTGRES_IMAGE_VERSION}
     restart: ${RESTART_POLICY}
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: ${TIMEZONE}
     ports:
       - ${POSTGRES_PORT}:5432
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - default:/var/lib/postgresql/data
     networks:
       - default
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
       interval: ${HEALTHCHECK_INTERVAL}
       timeout: ${HEALTHCHECK_TIMEOUT}
       retries: ${HEALTHCHECK_RETRIES}
 
   keycloak:
     container_name: ${KEYCLOAK_CONTAINER_NAME}
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+    image: ${KEYCLOAK_IMAGE_NAME}:${KEYCLOAK_IMAGE_VERSION}
     restart: ${RESTART_POLICY}
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
-      KC_DB_URL_DATABASE: ${POSTGRES_DB_NAME}
+      KC_DB_URL_DATABASE: ${POSTGRES_DATABASE}
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED}
-      KC_LOG_LEVEL: ${KC_LOG_LEVEL}
+      KC_METRICS_ENABLED: ${KEYCLOAK_METRICS_ENABLED}
+      KC_LOG_LEVEL: ${KEYCLOAK_LOG_LEVEL}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       TZ: ${TIMEZONE}
     ports:
-      - ${KEYCLOAK_PORT}:8080
+      - ${KEYCLOAK_HTTP_PORT}:8080
     volumes:
-      - keycloak-themes:/opt/keycloak/themes
+      - keycloak_themes:/opt/keycloak/themes
     networks:
       - default
     depends_on:
@@ -56,9 +58,9 @@ networks:
     driver: bridge
 
 volumes:
-  postgres-data:
+  default:
     name: ${POSTGRES_CONTAINER_NAME}_data
     driver: local
-  keycloak-themes:
+  keycloak_themes:
     name: ${KEYCLOAK_CONTAINER_NAME}_themes
     driver: local
